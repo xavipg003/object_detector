@@ -24,7 +24,7 @@ To train a model, the project expects the data to be organized in a `data/` fold
 ├── src/
 └── ...
 
-```text
+``
 
 The labels.json file must follow the COCO Object Detection standard, including images, annotations, and categories keys.
 
