@@ -23,6 +23,7 @@ To train a model, the project expects the data to be organized in a `data/` fold
 │   └── labels.json     # COCO style annotations
 ├── src/
 └── ...
+
 ```text
 
 The labels.json file must follow the COCO Object Detection standard, including images, annotations, and categories keys.
@@ -30,6 +31,7 @@ The labels.json file must follow the COCO Object Detection standard, including i
 Below is an example of the expected JSON structure:
 
 ```text
+
 {
     "images": [
         {
