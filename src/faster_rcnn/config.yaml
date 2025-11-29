@@ -16,7 +16,7 @@ training:
   epochs: 30
   learning_rate: 0.001
   accum: 4
-  debug: false
+  debug: true
 
 paths:
   train: "../../data/train/"
