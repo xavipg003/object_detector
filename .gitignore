@@ -1,0 +1,8 @@
+.vscode/
+checkpoints/
+data/
+models/
+output_imgs/
+src/faster_rcnn/wandb/
+src/detr/wandb/
+src/detr/logs/
