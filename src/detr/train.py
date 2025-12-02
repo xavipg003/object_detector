@@ -1,5 +1,5 @@
 from datasets import load_from_disk
-from utils import transform, collate_fn, make_transforms, get_end_config, print_sample
+from utils import transform, collate_fn, make_transforms, get_end_config
 from transformers import DetrImageProcessor, DetrForObjectDetection, TrainingArguments, Trainer
 import argparse
 from omegaconf import OmegaConf
@@ -15,6 +15,8 @@ if __name__ == "__main__":
 
     config = OmegaConf.load(config_path)
     config, name= get_end_config(config)
+
+    debug = config['training']['debug']
 
 
     dataset = load_from_disk(config['paths']['data'])
@@ -33,6 +35,8 @@ if __name__ == "__main__":
         num_labels=1,
     )
 
+    print(f"Debug mode: {debug}")
+
     training_args = TrainingArguments(
         output_dir=config['paths']['checkpoints'],
         per_device_train_batch_size=config['training']['batch_size'],
@@ -45,7 +49,8 @@ if __name__ == "__main__":
         remove_unused_columns=False,
         eval_strategy="epoch",
         run_name=name,
-        
+        report_to="all" if not debug else "none",
+        logging_strategy="epoch" if not debug else "no",
     )
 
     trainer = Trainer(

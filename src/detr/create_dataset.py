@@ -2,11 +2,12 @@ import json
 import os
 from PIL import Image
 from datasets import Dataset, DatasetDict
-
+import numpy as np
 
 def create_split(split_name):
     split_dir = os.path.join(root_dir, split_name)
     images, objects = [], []
+    i=0
 
     for img_info in coco_data["images"]:
         img_path = os.path.join(split_dir, img_info["file_name"])
@@ -15,18 +16,28 @@ def create_split(split_name):
 
         anns = image_to_anns[img_info["id"]]
         if not anns:
-            continue  # saltar imágenes sin anotaciones
+            continue  
 
         boxes = [a["bbox"] for a in anns]  # formato [x, y, w, h]
         categories = [a["category_id"] for a in anns]
 
-        images.append(Image.open(img_path).convert("RGB"))
+        image=Image.open(img_path)
+        arr = np.array(image)
+        arr_norm = (arr - arr.min()) / (arr.max() - arr.min()) * 255
+        arr_uint8 = arr_norm.astype(np.uint8)
+        image = Image.fromarray(arr_uint8).convert("RGB")
+
+        images.append(image)
+
         objects.append({
             "bbox": boxes,
             "category": categories,
             "image_id": img_info["id"],
             "file_name": img_info["file_name"]
         })
+
+        print(f"Processed {i} images", end="\r")
+        i += 1
 
     return Dataset.from_dict({"image": images, "objects": objects})
 
@@ -36,10 +47,9 @@ if __name__ == "__main__":
 
     with open(os.path.join(root_dir, "labels.json"), "r") as f:
         coco_data = json.load(f)
-    # Crear diccionario imagen_id → info de imagen
+
     id_to_image = {img["id"]: img for img in coco_data["images"]}
 
-    # Crear diccionario imagen_id → lista de anotaciones
     from collections import defaultdict
     image_to_anns = defaultdict(list)
     for ann in coco_data["annotations"]:

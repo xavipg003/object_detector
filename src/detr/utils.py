@@ -1,5 +1,4 @@
 import torch
-from torchvision.transforms import ToPILImage
 from albumentations.pytorch import ToTensorV2
 import albumentations as A
 import numpy as np
@@ -19,7 +18,6 @@ def make_transforms(config):
         bbox_params=A.BboxParams(format='coco', label_fields=['labels'])
     )
     return transform_train, transform_test
-
 
 def build_transforms(transform_cfg):
     transforms = []
@@ -72,7 +70,6 @@ def transform(example_batch, processor, aug_transform=None):
     } for ex in batch["objects"]]
 
     inputs = processor(images=images, annotations=annotations, return_tensors="pt")
-    print(inputs)
 
     return inputs
 
@@ -100,8 +97,3 @@ def get_end_config(config):
     )
     return config, name
 
-def print_sample(sample):
-    print(sample)
-    print(f"{sample['labels']}")
-    import sys
-    sys.exit()
