@@ -1,3 +1,4 @@
+import optuna
 import torch
 import lightning as L
 from torchmetrics.detection import MeanAveragePrecision
@@ -22,7 +23,7 @@ from transformers import DetrImageProcessor
 
 
 class CustomModel(L.LightningModule):
-    def __init__(self, config, model):
+    def __init__(self, config, model, trial):
         super(CustomModel, self).__init__()
         self.model = model
         self.learning_rate = config['training']['learning_rate']
@@ -38,6 +39,7 @@ class CustomModel(L.LightningModule):
         self.model_type = config['model']['model_type']
 
         self.config = config
+        self.trial = trial
     
     def forward(self, x):
         return self.model(x)
@@ -82,7 +84,13 @@ class CustomModel(L.LightningModule):
 
         f1_score = 2 * (precision * recall) / (precision + recall + 1e-6)
         self.log("val_f1", f1_score, prog_bar=True, batch_size=self.batch_size)
-        self.map.reset()
+
+        if self.trial is not None:
+            self.trial.report(metrica["map"], self.current_epoch)
+
+            if self.trial.should_prune():
+                raise optuna.exceptions.TrialPruned()
+            self.map.reset()
 
     def test_step(self, batch, batch_idx):
         images, targets = batch

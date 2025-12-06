@@ -1,10 +1,11 @@
 # config.yaml
 
 size: 800
+inf_name: "swin_backbone-swin_tiny_patch4_window7_224_fpn-True_lora-False_bs-1_lr-0.00042085894570310326_accum-1_size-800-val_f1=0.97.ckpt"
 
 model:
   nclasses: 2
-  model_type: "swin" #swin, fasterrcnn, detr, custom
+  model_type: "swin" #swin, fasterrcnn, custom
   backbone_name: "swin_base_patch4_window7_224" #swin_base_patch4_window7_224, swin_tiny_patch4_window7_224
   fpn: false
   size: ${size}
@@ -13,10 +14,10 @@ model:
 # Training parameters
 training:
   batch_size: 3
-  epochs: 30
+  epochs: 10
   learning_rate: 0.001
   accum: 4
-  debug: true
+  debug: false
 
 paths:
   train: "../../data/train/"

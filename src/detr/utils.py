@@ -82,18 +82,10 @@ def collate_fn(batch):
     return data
 
 
-def get_end_config(config):
-    if os.getenv("LR") != '':
-        config['training']['learning_rate'] = float(os.getenv("LR"))
-        print(f"Usando variable de entorno LR: {config['training']['learning_rate']}")
-
-    if os.getenv("BS") != '':
-        config['training']['batch_size'] = int(os.getenv("BS"))
-        print(f"Usando variable de entorno BS: {config['training']['batch_size']}")
-
+def get_name(config):
     name = (
         f"detr_bs-{config['training']['batch_size']}"
         f"_lr-{config['training']['learning_rate']}"
     )
-    return config, name
+    return name
 

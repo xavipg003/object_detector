@@ -49,6 +49,8 @@ def save_image_with_boxes(image, pred_boxes, ground_truth, output_path):
         )
         ax.add_patch(rect)
 
+       
+
     plt.savefig(output_path, bbox_inches='tight', pad_inches=0, dpi=150)
     
     plt.close(fig)

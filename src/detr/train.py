@@ -14,7 +14,7 @@ if __name__ == "__main__":
     config_path = args.config
 
     config = OmegaConf.load(config_path)
-    config, name= get_end_config(config)
+    name= get_end_config(config)
 
     debug = config['training']['debug']
 
@@ -62,10 +62,3 @@ if __name__ == "__main__":
     )
     
     trainer.train()
-
-
-
-
-
-
-

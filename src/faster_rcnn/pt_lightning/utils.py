@@ -15,6 +15,66 @@ from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator
 from torchvision.ops import MultiScaleRoIAlign
 
+def save_image(image, path, ground_truth=[], prediction=[], scores=[], threshold=0.5):
+    fig, ax = plt.subplots(1)
+    ax.axis('off')
+    ax.imshow(image)
+
+    for i,box in enumerate(prediction):
+        score = scores[i].item()
+        if score < threshold:
+            continue
+        xmin, ymin, xmax, ymax = box
+
+        rect = patches.Rectangle(
+            (xmin, ymin),
+            xmax - xmin,
+            ymax - ymin,
+            linewidth=2,
+            edgecolor='red',
+            facecolor='none'
+        )
+        ax.add_patch(rect)
+
+    for box in ground_truth:
+        xmin, ymin, xmax, ymax = box
+
+        rect = patches.Rectangle(
+            (xmin, ymin),
+            xmax - xmin,
+            ymax - ymin,
+            linewidth=2,
+            edgecolor='green',
+            facecolor='none'
+        )
+        ax.add_patch(rect)
+    plt.savefig(path, bbox_inches='tight', pad_inches=0, dpi=150)
+    
+    plt.close(fig)
+
+def gethyperparameters(config, trial, from_name=False):
+    if not from_name:
+        config['model']['model_type'] = trial.suggest_categorical('model_type', ["swin", "fasterrcnn"])
+        if config['model']['model_type']=="swin":
+            config['model']['backbone_name'] = trial.suggest_categorical('backbone_name',                                                                               ["swin_base_patch4_window7_224", "swin_tiny_patch4_window7_224"])
+            config['model']['lora'] = trial.suggest_categorical('lora', [True, False])
+            config['model']['fpn'] = trial.suggest_categorical('fpn', [True, False])
+        config['training']['batch_size'] = trial.suggest_categorical('batch_size', [1, 2, 4])
+        config['training']['learning_rate'] = trial.suggest_float('learning_rate',
+                                                                            1e-6, 1e-3, log=True)
+        config['training']['accum'] = trial.suggest_categorical('accum', [1, 2, 4, 8])
+    else:
+        name=config['inf_name']
+        parts=name.split('_')
+        config['model']['model_type']=parts[0]
+        if config['model']['model_type']=="swin":
+            config['model']['backbone_name']="_".join(parts[1:6]).split('-')[1]
+            config['model']['fpn']=parts[6].split('-')[1]=="True"
+            config['model']['lora']=parts[7].split('-')[1]=="True"
+        else:
+            config['model']['lora']=parts[1].split('-')[1]=="True"
+    return config
+
 def build_model(config):
     if config['model']['model_type']=="swin":
         model = make_swin(config)
@@ -122,31 +182,7 @@ def build_transforms(transform_cfg):
             transforms.append(cls(**t))
     return transforms
 
-def get_end_config(config):
-    if os.getenv("LR") != '':
-        config['training']['learning_rate'] = float(os.getenv("LR"))
-        print(f"Usando variable de entorno LR: {config['training']['learning_rate']}")
-
-    if os.getenv("BS") != '':
-        config['training']['batch_size'] = int(os.getenv("BS"))
-        print(f"Usando variable de entorno BS: {config['training']['batch_size']}")
-    
-    if os.getenv("LORA") != '':
-        config['model']['lora'] = bool(int(os.getenv("LORA")))
-        print("Usando variable de entorno: LORA: ", config['model']['lora'])
-
-    if os.getenv("FPN") != '':
-        config['model']['fpn'] = bool(int(os.getenv("FPN")))
-        print("Usando variable de entorno: FPN: ", config['model']['fpn'])
-
-    if os.getenv("BACKBONE") != '':
-        config['model']['backbone_name'] = os.getenv("BACKBONE")
-        print(f"Usando variable de entorno BACKBONE: {config['model']['backbone_name']}")
-
-    if os.getenv("MODEL_TYPE") != '':
-        config['model']['model_type'] = os.getenv("MODEL_TYPE")
-        print(f"Usando variable de entorno MODEL_TYPE: {config['model']['model_type']}")
-
+def get_name(config):
     if config['model']['model_type'] == "swin":
         name = (
             f"{config['model']['model_type']}"
@@ -167,7 +203,7 @@ def get_end_config(config):
             f"_accum-{config['training']['accum']}"
             f"_size-{config['size']}"
         )
-    return config, name
+    return name
 
 def make_transforms(config):
     train_cfg = config.get('train_transforms', {})
@@ -184,11 +220,11 @@ def make_transforms(config):
     )
     return transform_train, transform_test
 
-def make_callbacks(name):
+def make_callbacks(config,name):
     checkpoint_callback = ModelCheckpoint(
-        monitor='val_f1',
-        dirpath='../checkpoints/',
-        filename=name+'-{val_f1:.2f}',
+        monitor='val_map',
+        dirpath=config['paths']['checkpoints'],
+        filename=name+'-{val_map:.2f}',
         save_top_k=1,
         mode='max',
     )
