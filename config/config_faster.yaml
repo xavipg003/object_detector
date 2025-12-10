@@ -20,11 +20,14 @@ training:
   debug: false
 
 paths:
-  train: "../../data/train/"
-  validation: "../../data/validation/"
-  test: "../../data/test/"
-  labels: "../../data/labels.json"
-  checkpoints: "../../checkpoints/"
+  train: "data/train/"
+  validation: "data/validation/"
+  test: "data/test/"
+  labels: "data/labels.json"
+  checkpoints: "output/checkpoints/"
+  output_images: "output/images/"
+  model_path: "models/fasterrcnn"
+
 train_transforms:
   - name: Resize
     height: ${size}

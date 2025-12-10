@@ -1,20 +1,14 @@
 from datasets import load_from_disk
-from utils import transform, collate_fn, make_transforms, get_end_config
+from src.detr.utils import transform, collate_fn, make_transforms, get_name
 from transformers import DetrImageProcessor, DetrForObjectDetection, TrainingArguments, Trainer
-import argparse
 from omegaconf import OmegaConf
 
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Train object detector")
-    parser.add_argument('--config', type=str, default="config.yaml", help="Path to config file")
-    args = parser.parse_args()
-    config_path = args.config
+def train(config):
 
-    config = OmegaConf.load(config_path)
-    name= get_end_config(config)
+    name=get_name(config)
 
     debug = config['training']['debug']
 
@@ -62,3 +56,11 @@ if __name__ == "__main__":
     )
     
     trainer.train()
+
+if __name__ == "__main__":
+    config_path = "../../config/config_detr.yaml"
+    
+    config = OmegaConf.load(config_path)
+
+    train(config)
+    

@@ -2,7 +2,6 @@ import torch
 from albumentations.pytorch import ToTensorV2
 import albumentations as A
 import numpy as np
-import os
 
 def make_transforms(config):
     train_cfg = config.get('train_transforms', {})

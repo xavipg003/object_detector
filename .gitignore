@@ -2,7 +2,9 @@
 checkpoints/
 data/
 models/
-output_imgs/
+output/
 src/faster_rcnn/wandb/
 src/detr/wandb/
 src/detr/logs/
+wandb/
+__pycache__/

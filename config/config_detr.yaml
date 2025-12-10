@@ -8,8 +8,11 @@ training:
   debug: false
 
 paths:
-  data: "../../data/dataset"
-  checkpoints: "../../checkpoints"
+  data: "data/dataset"
+  checkpoints: "output/checkpoints"
+  output_images: "output/images"
+  model_path: "models/detr"
+
 train_transforms:
   - name: RandomBrightnessContrast
     brightness_limit: 0.1

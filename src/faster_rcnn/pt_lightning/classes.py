@@ -2,12 +2,10 @@ import optuna
 import torch
 import lightning as L
 from torchmetrics.detection import MeanAveragePrecision
-from torch.utils.data import random_split
 
 from torch.utils.data import Dataset
 
 import os
-import sys
 from PIL import Image
 
 import json
@@ -18,12 +16,11 @@ import torch
 from PIL import ImageFile
 
 from pathlib import Path
-from .utils import make_transforms, convert_to_8bit
-from transformers import DetrImageProcessor
+from src.faster_rcnn.pt_lightning.utils import make_transforms, convert_to_8bit
 
 
 class CustomModel(L.LightningModule):
-    def __init__(self, config, model, trial):
+    def __init__(self, config, model, trial=None):
         super(CustomModel, self).__init__()
         self.model = model
         self.learning_rate = config['training']['learning_rate']

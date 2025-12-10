@@ -1,14 +1,12 @@
-import torch
 from albumentations.pytorch import ToTensorV2
 import albumentations as A
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
 import cv2
-import os
 from lightning.pytorch.callbacks import ModelCheckpoint
 from lightning.pytorch.callbacks import LearningRateMonitor
-from swin_utils.build import make_swin
+from src.faster_rcnn.swin_utils.build import make_swin
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torchvision.models import ResNet50_Weights, vgg16, VGG16_Weights
 from torchvision.models.detection import FasterRCNN
@@ -52,16 +50,18 @@ def save_image(image, path, ground_truth=[], prediction=[], scores=[], threshold
     
     plt.close(fig)
 
-def gethyperparameters(config, trial, from_name=False):
+def gethyperparameters(config, trial=None, from_name=False):
     if not from_name:
+        if trial is None:
+            return config
         config['model']['model_type'] = trial.suggest_categorical('model_type', ["swin", "fasterrcnn"])
         if config['model']['model_type']=="swin":
             config['model']['backbone_name'] = trial.suggest_categorical('backbone_name',                                                                               ["swin_base_patch4_window7_224", "swin_tiny_patch4_window7_224"])
             config['model']['lora'] = trial.suggest_categorical('lora', [True, False])
             config['model']['fpn'] = trial.suggest_categorical('fpn', [True, False])
-        config['training']['batch_size'] = trial.suggest_categorical('batch_size', [1, 2, 4])
+        config['training']['batch_size'] = trial.suggest_categorical('batch_size', [2, 4, 6])
         config['training']['learning_rate'] = trial.suggest_float('learning_rate',
-                                                                            1e-6, 1e-3, log=True)
+                                                                            1e-5, 1e-3, log=True)
         config['training']['accum'] = trial.suggest_categorical('accum', [1, 2, 4, 8])
     else:
         name=config['inf_name']
