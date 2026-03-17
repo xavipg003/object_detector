@@ -13,7 +13,7 @@ from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator
 from torchvision.ops import MultiScaleRoIAlign
 
-def save_image(image, path, ground_truth=[], prediction=[], scores=[], threshold=0.5):
+def save_image(image, path, ground_truth=[], prediction=[], scores=[], threshold=0.5, orig_size=None):
     fig, ax = plt.subplots(1)
     ax.axis('off')
     ax.imshow(image)
@@ -46,9 +46,15 @@ def save_image(image, path, ground_truth=[], prediction=[], scores=[], threshold
             facecolor='none'
         )
         ax.add_patch(rect)
+
     plt.savefig(path, bbox_inches='tight', pad_inches=0, dpi=150)
     
     plt.close(fig)
+
+    img = cv2.imread(path)
+    if orig_size is not None:
+        img = cv2.resize(img, (orig_size[1], orig_size[0]))
+        cv2.imwrite(path, img)
 
 def gethyperparameters(config, trial=None, from_name=False):
     if not from_name:

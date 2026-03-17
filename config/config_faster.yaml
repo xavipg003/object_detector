@@ -1,15 +1,15 @@
 # config.yaml
 
 size: 800
-inf_name: "swin_backbone-swin_tiny_patch4_window7_224_fpn-True_lora-False_bs-1_lr-0.00042085894570310326_accum-1_size-800-val_f1=0.97.ckpt"
+inf_name: "fasterrcnn_lora-True_bs-4_lr-0.00036395119764864127_accum-1_size-800-val_map=0.90.ckpt"
 
 model:
   nclasses: 2
-  model_type: "swin" #swin, fasterrcnn, custom
+  model_type: "fasterrcnn" #swin, fasterrcnn, custom
   backbone_name: "swin_base_patch4_window7_224" #swin_base_patch4_window7_224, swin_tiny_patch4_window7_224
   fpn: false
   size: ${size}
-  lora: false
+  lora: true
 
 # Training parameters
 training:

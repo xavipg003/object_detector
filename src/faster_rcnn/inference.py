@@ -12,7 +12,7 @@ def inference(config):
     output_dir=config['paths']['output_images']
     model_path=config['paths']['model_path']
 
-    datamodule=MyDataModule(config)
+    datamodule=MyDataModule(config, inference=True)
     datamodule.setup()
 
     model=build_model(config)
@@ -31,5 +31,6 @@ def inference(config):
                    ground_truth=inputs[1]['boxes'].numpy(),
                     prediction=prediction[0]['boxes'].numpy(),
                     scores=prediction[0]['scores'].numpy(),
-                    threshold=0.75)
+                    threshold=0.75, orig_size=inputs[2] if len(inputs)==3 else None)
+
     

@@ -82,12 +82,7 @@ class CustomModel(L.LightningModule):
         f1_score = 2 * (precision * recall) / (precision + recall + 1e-6)
         self.log("val_f1", f1_score, prog_bar=True, batch_size=self.batch_size)
 
-        if self.trial is not None:
-            self.trial.report(metrica["map"], self.current_epoch)
-
-            if self.trial.should_prune():
-                raise optuna.exceptions.TrialPruned()
-            self.map.reset()
+        self.map.reset()
 
     def test_step(self, batch, batch_idx):
         images, targets = batch
@@ -126,13 +121,15 @@ class CustomModel(L.LightningModule):
         return [optimizer], [scheduler]
     
 class AlbumentationsImageDataset(Dataset):
-    def __init__(self, config, img_dir, file, transform=None, bbox_mode=0):
+    def __init__(self, config, img_dir, file, transform=None, bbox_mode=0, ret_orig_size=False):
         self.img_dir = img_dir
         self.transform = transform
         self.file = file
         self.bbox_mode = bbox_mode
         self.model_type = config['model']['model_type']
+        self.ret_orig_size = ret_orig_size
         self.config = config
+
 
         with open(self.file, 'r') as f:
             self.data = json.load(f)
@@ -143,6 +140,7 @@ class AlbumentationsImageDataset(Dataset):
 
     def __getitem__(self, idx):
         data=self.data
+        ret_orig_size=self.ret_orig_size
         
         img_name=os.listdir(self.img_dir)[idx]
 
@@ -183,7 +181,9 @@ class AlbumentationsImageDataset(Dataset):
             boxes = torch.empty((0, 4), dtype=torch.float32)
             labels = torch.empty((0,), dtype=torch.int64)
 
-        
+        orig_size=None
+        if ret_orig_size:
+            orig_size=image.shape[:2]
         
         if self.transform:
             transformed = self.transform(
@@ -204,10 +204,13 @@ class AlbumentationsImageDataset(Dataset):
             'image_id': torch.tensor([img_id])
         }
 
-        return image, target
+        if ret_orig_size:
+            return image, target, orig_size
+        else:
+            return image, target
 
 class MyDataModule(L.LightningDataModule):
-    def __init__(self, config):
+    def __init__(self, config, inference=False):
         super().__init__()
 
         self.train_image_dir=Path(config['paths']['train'])
@@ -218,6 +221,7 @@ class MyDataModule(L.LightningDataModule):
         self.batch_size = config['training']['batch_size']
         self.model_type = config['model']['model_type']
         self.config=config
+        self.inference=inference
 
         if os.getenv("OMP_NUM_THREADS") is not None:
             self.nworkers=int(os.getenv("OMP_NUM_THREADS"))
@@ -228,7 +232,8 @@ class MyDataModule(L.LightningDataModule):
     def setup(self, stage=None):
         self.train_dataset=AlbumentationsImageDataset(self.config, img_dir=self.train_image_dir, file=self.label_file, transform=self.transform_train)
         self.val_dataset=AlbumentationsImageDataset(self.config, img_dir=self.validation_image_dir, file=self.label_file, transform=self.transform_test)
-        self.test_dataset=AlbumentationsImageDataset(self.config, img_dir=self.test_image_dir, file=self.label_file, transform=self.transform_test)
+        self.test_dataset=AlbumentationsImageDataset(self.config, img_dir=self.test_image_dir, file=self.label_file, transform=self.transform_test, 
+                                                     ret_orig_size=True if self.inference else False)
 
     def train_dataloader(self):
         return torch.utils.data.DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, collate_fn=lambda x: tuple(zip(*x)), num_workers=self.nworkers)
