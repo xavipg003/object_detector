@@ -18,6 +18,7 @@ training:
   learning_rate: 0.001
   accum: 4
   debug: false
+  cluster: false
 
 paths:
   train: "data/train/"

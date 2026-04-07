@@ -56,6 +56,20 @@ def save_image(image, path, ground_truth=[], prediction=[], scores=[], threshold
         img = cv2.resize(img, (orig_size[1], orig_size[0]))
         cv2.imwrite(path, img)
 
+    fig, ax = plt.subplots(1)
+    ax.axis('off')
+    ax.imshow(image)
+
+    path = path.replace('output.png', 'gt.png')
+    plt.savefig(path, bbox_inches='tight', pad_inches=0, dpi=150)
+    
+    plt.close(fig)
+
+    img = cv2.imread(path)
+    if orig_size is not None:
+        img = cv2.resize(img, (orig_size[1], orig_size[0]))
+        cv2.imwrite(path, img)
+
 def gethyperparameters(config, trial=None, from_name=False):
     if not from_name:
         if trial is None:

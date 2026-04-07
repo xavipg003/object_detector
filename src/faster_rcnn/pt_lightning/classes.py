@@ -24,12 +24,11 @@ class CustomModel(L.LightningModule):
         super(CustomModel, self).__init__()
         self.model = model
         self.learning_rate = config['training']['learning_rate']
-        self.map = MeanAveragePrecision(iou_type="bbox", 
-                                        extended_summary=True, 
-                                        class_metrics=False, 
-                                        iou_thresholds=[0.5],
-                                        average='macro',
-                                        )
+        self.map = MeanAveragePrecision(
+            iou_type="bbox",
+            iou_thresholds=None,  
+            class_metrics=False,    
+        )
         self.map_test = self.map.clone()
 
         self.batch_size = config['training']['batch_size']
@@ -71,16 +70,10 @@ class CustomModel(L.LightningModule):
 
     def on_validation_epoch_end(self):
         metrica= self.map.compute()
-        
-        precision = metrica['precision'][0, 70, 0, 0, 1]
-        recall = metrica['recall'][0, 0, 0, 1]
 
+        self.log("val_map50", metrica["map_50"], prog_bar=True, batch_size=1)
+        self.log("val_map75", metrica["map_75"], prog_bar=True, batch_size=1)
         self.log("val_map", metrica["map"], prog_bar=True, batch_size=1)
-        self.log("val_precision", precision, prog_bar=True, batch_size=1)
-        self.log("val_recall", recall, prog_bar=True, batch_size=1)
-
-        f1_score = 2 * (precision * recall) / (precision + recall + 1e-6)
-        self.log("val_f1", f1_score, prog_bar=True, batch_size=self.batch_size)
 
         self.map.reset()
 
@@ -98,15 +91,11 @@ class CustomModel(L.LightningModule):
     def on_test_epoch_end(self):
         metrica= self.map_test.compute()
         
-        precision = metrica['precision'][0, 70, 0, 0, 1]
-        recall = metrica['recall'][0, 0, 0, 1]
-
+        self.log("test_map50", metrica["map_50"], prog_bar=True, batch_size=1)
+        self.log("test_map75", metrica["map_75"], prog_bar=True, batch_size=1)
         self.log("test_map", metrica["map"], prog_bar=True, batch_size=1)
-        self.log("test_precision", precision, prog_bar=True, batch_size=1)
-        self.log("test_recall", recall, prog_bar=True, batch_size=1)
 
-        f1_score = 2 * (precision * recall) / (precision + recall + 1e-6)
-        self.log("test_f1", f1_score, prog_bar=True, batch_size=self.batch_size)
+
         self.map_test.reset()
 
     def configure_optimizers(self):
