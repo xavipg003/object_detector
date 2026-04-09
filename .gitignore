@@ -8,3 +8,4 @@ src/detr/wandb/
 src/detr/logs/
 wandb/
 __pycache__/
+optuna_journal.log

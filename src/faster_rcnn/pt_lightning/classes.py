@@ -28,6 +28,7 @@ class CustomModel(L.LightningModule):
             iou_type="bbox",
             iou_thresholds=None,  
             class_metrics=False,    
+            average='macro'
         )
         self.map_test = self.map.clone()
 
@@ -70,10 +71,13 @@ class CustomModel(L.LightningModule):
 
     def on_validation_epoch_end(self):
         metrica= self.map.compute()
+        for k, v in metrica.items():
+            print(f"{k}: {v}")
 
         self.log("val_map50", metrica["map_50"], prog_bar=True, batch_size=1)
         self.log("val_map75", metrica["map_75"], prog_bar=True, batch_size=1)
         self.log("val_map", metrica["map"], prog_bar=True, batch_size=1)
+        self.log("val_mar",   metrica["mar_100"], prog_bar=True)
 
         self.map.reset()
 
@@ -94,7 +98,7 @@ class CustomModel(L.LightningModule):
         self.log("test_map50", metrica["map_50"], prog_bar=True, batch_size=1)
         self.log("test_map75", metrica["map_75"], prog_bar=True, batch_size=1)
         self.log("test_map", metrica["map"], prog_bar=True, batch_size=1)
-
+        self.log("test_mar", metrica["mar_100"], prog_bar=True, batch_size=1)
 
         self.map_test.reset()
 

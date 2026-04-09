@@ -23,12 +23,12 @@ def test(config):
 
     model.to(device)
 
-    metric = MeanAveragePrecision(iou_type="bbox", 
-                                        extended_summary=True, 
-                                        class_metrics=False, 
-                                        iou_thresholds=[0.5],
-                                        average='macro'
-                                        )
+    metric = MeanAveragePrecision(
+            iou_type="bbox",
+            iou_thresholds=None,  
+            class_metrics=False,    
+            average='macro'
+        )
 
     model.eval()
 
@@ -94,11 +94,11 @@ def test(config):
     metrics_dict = metric.compute()
 
     map= metrics_dict["map"]
-    precision = metrics_dict['precision'][0, 70, 0, 0, 1]
-    recall = metrics_dict['recall'][0, 0, 0, 1]
-    f1_score = 2 * (precision * recall) / (precision + recall + 1e-6)
+    map50 = metrics_dict["map_50"]
+    map75 = metrics_dict["map_75"]
+    mar = metrics_dict["mar_100"]
     print(f"mAP: {map}")
-    print(f"Precision: {precision}")
-    print(f"Recall: {recall}")
-    print(f"F1 Score: {f1_score}")
+    print(f"mAP50: {map50}")
+    print(f"mAR: {mar}")
+    print(f"mAP75: {map75}")
 

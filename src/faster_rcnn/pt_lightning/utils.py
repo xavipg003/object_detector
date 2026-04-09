@@ -76,7 +76,7 @@ def gethyperparameters(config, trial=None, from_name=False):
             return config
         config['model']['model_type'] = trial.suggest_categorical('model_type', ["swin", "fasterrcnn"])
         if config['model']['model_type']=="swin":
-            config['model']['backbone_name'] = trial.suggest_categorical('backbone_name',                                                                               ["swin_base_patch4_window7_224", "swin_tiny_patch4_window7_224"])
+            config['model']['backbone_name'] = trial.suggest_categorical('backbone_name',["swin_base_patch4_window7_224", "swin_tiny_patch4_window7_224"])
             config['model']['lora'] = trial.suggest_categorical('lora', [True, False])
             config['model']['fpn'] = trial.suggest_categorical('fpn', [True, False])
         config['training']['batch_size'] = trial.suggest_categorical('batch_size', [2, 4, 6])
@@ -217,7 +217,6 @@ def get_name(config):
     else:
         name = (
             f"{config['model']['model_type']}"
-            f"_lora-{config['model']['lora']}"
             f"_bs-{config['training']['batch_size']}"
             f"_lr-{config['training']['learning_rate']}"
             f"_accum-{config['training']['accum']}"
