@@ -9,7 +9,8 @@ model:
   backbone_name: "swin_base_patch4_window7_224" #swin_base_patch4_window7_224, swin_tiny_patch4_window7_224
   fpn: true
   size: ${size}
-  lora: true
+  lora: false
+  lora_r: 4
 
 # Training parameters
 training:
@@ -18,7 +19,7 @@ training:
   learning_rate: 0.001
   accum: 4
   debug: false
-  cluster: false
+  cluster: true
   freeze_epochs: 15
 
 paths:

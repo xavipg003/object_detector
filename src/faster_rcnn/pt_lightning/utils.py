@@ -78,6 +78,8 @@ def gethyperparameters(config, trial=None, from_name=False):
         if config['model']['model_type']=="swin":
             config['model']['backbone_name'] = trial.suggest_categorical('backbone_name',["swin_base_patch4_window7_224", "swin_tiny_patch4_window7_224"])
             config['model']['lora'] = trial.suggest_categorical('lora', [True, False])
+            if config['model']['lora']:
+                config['model']['lora_r'] = trial.suggest_categorical('lora_r', [4, 8, 16, 32, 64])
             config['model']['fpn'] = trial.suggest_categorical('fpn', [True, False])
         config['training']['batch_size'] = trial.suggest_categorical('batch_size', [2, 4, 6])
         config['training']['learning_rate'] = trial.suggest_float('learning_rate',
@@ -91,8 +93,12 @@ def gethyperparameters(config, trial=None, from_name=False):
             config['model']['backbone_name']="_".join(parts[1:6]).split('-')[1]
             config['model']['fpn']=parts[6].split('-')[1]=="True"
             config['model']['lora']=parts[7].split('-')[1]=="True"
+            if config['model']['lora']:
+                config['model']['lora_r']=int(parts[8].split('-')[1])
         else:
             config['model']['lora']=parts[1].split('-')[1]=="True"
+            if config['model']['lora']:
+                config['model']['lora_r']=int(parts[2].split('-')[1])
     return config
 
 def build_model(config):
@@ -147,6 +153,7 @@ def get_name(config):
             f"_backbone-{config['model']['backbone_name']}"
             f"_fpn-{config['model']['fpn']}"
             f"_lora-{config['model']['lora']}"
+            f"_r-{config['model']['lora_r'] if config['model']['lora'] else 'NA'}"
             f"_bs-{config['training']['batch_size']}"
             f"_lr-{config['training']['learning_rate']}"
             f"_accum-{config['training']['accum']}"

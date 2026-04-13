@@ -67,7 +67,7 @@ def make_swin(config):
         lora_config = LoraConfig(
             #task_type=TaskType.FEATURE_EXTRACTION,  
             inference_mode=False,
-            r=16,         
+            r=config['model']['lora_r'],         
             lora_alpha=16,
             lora_dropout=0.1,
             target_modules=["qkv", "proj"]
