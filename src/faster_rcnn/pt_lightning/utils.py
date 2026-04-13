@@ -128,68 +128,6 @@ def build_model(config):
         raise ValueError(f"Unknown model type: {config['model']['model_type']}. Choose 'transformer' or 'fasterrcnn' or 'custom'.")
     return model
 
-def showImg(image, true_labels, predicted_labels=[], scores=[], threshold=0.5, all=False):
-    fig, ax = plt.subplots(1)
-    ax.imshow(image.permute(1, 2, 0).cpu().numpy())
-
-    for label in true_labels:
-        
-        x_min, y_min, x_max, y_max = label
-
-        rect = patches.Rectangle(
-            (x_min, y_min),
-            x_max - x_min,
-            y_max - y_min,
-            linewidth=3,
-            edgecolor='red',
-            facecolor='none',
-            label='Faster R-CNN'
-        )
-        ax.add_patch(rect)
-
-    for i, label in enumerate(predicted_labels):
-        
-        x_min, y_min, x_max, y_max = label
-
-        if scores[i] < threshold:
-            if all:
-                edgecolor = 'blue'
-            else:
-                edgecolor = 'none'
-        else:
-            edgecolor = 'yellow'
-        # if i < 3:
-        #     edgecolor = 'green'
-        # else:
-        #     edgecolor = 'none'
-
-        rect = patches.Rectangle(
-            (x_min, y_min),
-            x_max - x_min,
-            y_max - y_min,
-            linewidth=2,
-            edgecolor=edgecolor,
-            facecolor='none',
-            label='Faster R-CNN'
-        )
-        ax.add_patch(rect)
-
-    plt.savefig('../inference_imgs/inf.jpg', dpi=300, bbox_inches='tight')
-    plt.close()
-
-def adjust_gamma(image, gamma=1.0):
-    inv_gamma = 1.0 / gamma
-    table = np.array([(i / 255.0) ** inv_gamma * 255 for i in range(256)]).astype("uint8")
-    return cv2.LUT(image, table)
-
-def increase_contrast_brightness(image, alpha=1.1, beta0=40, **kwargs):
-    brillo_medio=np.mean(image)
-    beta=beta0-brillo_medio
-
-    image = adjust_gamma(image, gamma=1.2)
-
-    return cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
-
 def build_transforms(transform_cfg):
     transforms = []
     for t in transform_cfg:

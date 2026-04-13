@@ -40,6 +40,14 @@ class CustomModel(L.LightningModule):
     
     def forward(self, x):
         return self.model(x)
+    
+    def on_train_epoch_start(self):
+        freeze_epochs = self.config['training']['freeze_epochs']
+                
+        if self.current_epoch == freeze_epochs and self.config['model']['model_type'] == "swin" and self.config['model']['lora']:
+            for name, param in self.model.backbone.named_parameters():
+                if 'lora_' in name:
+                    param.requires_grad = True
 
     def training_step(self, batch, batch_idx):
         images, targets = batch
@@ -71,8 +79,6 @@ class CustomModel(L.LightningModule):
 
     def on_validation_epoch_end(self):
         metrica= self.map.compute()
-        for k, v in metrica.items():
-            print(f"{k}: {v}")
 
         self.log("val_map50", metrica["map_50"], prog_bar=True, batch_size=1)
         self.log("val_map75", metrica["map_75"], prog_bar=True, batch_size=1)

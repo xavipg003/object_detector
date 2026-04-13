@@ -65,7 +65,7 @@ def make_swin(config):
 
     if config['model']['lora']:
         lora_config = LoraConfig(
-            task_type=TaskType.FEATURE_EXTRACTION,  
+            #task_type=TaskType.FEATURE_EXTRACTION,  
             inference_mode=False,
             r=16,         
             lora_alpha=16,
